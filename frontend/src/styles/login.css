@@ -1,0 +1,95 @@
+/* src/styles/login.css */
+.login-root {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0f2342 0%, #1a3a5c 50%, #2a5080 100%);
+  padding: 1.5rem;
+}
+
+.login-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  width: 100%; max-width: 420px;
+  box-shadow: var(--shadow-lg);
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-seal {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.login-brand h1 {
+  font-size: 1.4rem;
+  color: var(--navy);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.login-brand p {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+
+.login-form { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.field-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field-group input {
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--gray-800);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field-group input:focus { border-color: var(--blue); }
+
+.login-error {
+  background: var(--red-bg);
+  color: var(--red);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: 0.875rem;
+  border-left: 3px solid var(--red);
+}
+
+.login-btn {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.875rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background 0.2s, transform 0.1s;
+}
+.login-btn:hover { background: var(--navy-mid); }
+.login-btn:active { transform: scale(0.99); }
+.login-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+.login-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--gray-400);
+  line-height: 1.5;
+}

@@ -1,0 +1,195 @@
+/* src/styles/purposes.css */
+.purposes-root {
+  min-height: 100vh;
+  background: var(--gray-100);
+  padding: 2rem;
+}
+
+.purposes-header {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.purposes-header h1 {
+  font-size: 1.4rem;
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.purposes-header p {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+}
+
+/* ── Tabs ── */
+.purposes-tabs {
+  max-width: 600px;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  gap: 0.5rem;
+  background: var(--white);
+  padding: 0.4rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.purposes-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.6rem 0.875rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  transition: background 0.15s, color 0.15s;
+}
+.purposes-tab:hover { background: var(--gray-50); }
+.tab-active {
+  background: var(--navy);
+  color: #fff;
+}
+.tab-active:hover { background: var(--navy); }
+
+.tab-description {
+  font-size: 0.82rem;
+  color: var(--gray-400);
+  margin-top: -0.5rem;
+}
+
+.purposes-card {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.add-purpose-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.add-purpose-row input {
+  flex: 1;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.875rem;
+  font-size: 0.9rem;
+  color: var(--gray-800);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.add-purpose-row input:focus { border-color: var(--blue); }
+
+.add-purpose-btn {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.7rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.add-purpose-btn:hover:not(:disabled) { background: var(--navy-mid); }
+.add-purpose-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+.form-error {
+  font-size: 0.83rem;
+  color: var(--red);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 0.9rem;
+  padding: 1.5rem 0;
+}
+
+.purposes-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.purpose-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--gray-50);
+  border-radius: 8px;
+  border: 1px solid var(--gray-100);
+  font-size: 0.9rem;
+  color: var(--gray-800);
+  transition: background 0.15s;
+}
+.purpose-item:hover { background: var(--blue-light); }
+
+.delete-purpose-btn {
+  border: none;
+  background: none;
+  color: var(--gray-400);
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.delete-purpose-btn:hover {
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.edit-purpose-btn {
+  border: none;
+  background: none;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.edit-purpose-btn:hover { background: var(--blue-light); }
+
+.edit-inline-input {
+  flex: 1;
+  border: 1.5px solid var(--blue);
+  border-radius: 6px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.88rem;
+  outline: none;
+  margin-right: 0.5rem;
+}
+
+.save-edit-btn, .cancel-edit-btn {
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 6px;
+}
+.save-edit-btn {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.save-edit-btn:hover { background: var(--green); color: #fff; }
+.cancel-edit-btn {
+  background: var(--red-bg);
+  color: var(--red);
+}
+.cancel-edit-btn:hover { background: var(--red); color: #fff; }

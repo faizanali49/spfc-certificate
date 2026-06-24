@@ -1,0 +1,766 @@
+/* RESPONSIVE SAFETY */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.record-base-cert,
+.record-base-cert * {
+  max-width: 100%;
+}
+
+.responsive-wrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  /* underline this text */
+  
+}
+.bottom {
+  text-decoration: underline;
+  font-size: 1rem;
+}
+/* Container Base Shell setup */
+.verify-root {
+  background-color: #080874;
+  background-image: url('https://spfc.punjab.gov.pk/assets/images/bg.jpg');
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-size: cover;
+  display: block;
+  /* Properly clears the 80px tall fixed top header layout */
+  padding-top: 0px; 
+  position: relative;
+  overflow-x: hidden; /* Guards against horizontal scrolling from full-width footer positioning */
+}
+
+/* TOP BANNER WRAPPER CONFIG */
+.police-khidmat-banner {
+  position: sticky; /* Added to keep banner anchored at the top */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(90deg, #a5b1cc47 0%, #dbdde239 100%);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 15px 0 30px; /* Pushes logo away from left screen boundary */
+  box-sizing: border-box;
+  z-index: 9999;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.banner-logo-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner-text-stack {
+  display: flex;
+  flex-direction: column;
+  color: #ffffff;
+}
+
+.banner-title {
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.banner-subtitle {
+  font-family: sans-serif;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* Certificate Layout Wrapper */
+.verify-main {
+  width: 100%;
+  display: flex;
+  padding: 4.5rem 0.8rem 6.5rem 0.8rem; /* Bottom padding extended to leave space for the absolute page footer */
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.record-base-cert {
+  background: #ffffff;
+  width: 100%; 
+  margin: 10px 6px; /* 6px padding from screen edge */
+  padding: 0.8rem 0.6rem;
+  border: 1px solid #777;
+  position: relative;
+  box-sizing: border-box;
+  color: #000000;
+}
+
+/* Local Image Faded Watermark */
+.cert-watermark-bg {
+  position: absolute;
+  /* 1. Center perfectly regardless of screen size */
+  top: 32%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  /* 2. Responsive Sizing: Scale dynamically with screen width */
+  width: 60vw;         /* Uses 60% of the viewport width */
+  height: 60vw;        /* Keeps it perfectly square */
+  
+  /* 3. Boundaries: Set maximum limits so it doesn't get huge on ultra-wide screens */
+  max-width: 45rem;
+  max-height: 45rem;
+  
+  /* 4. Keep your existing image settings */
+  background-image: url('/assets/police.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.13; 
+  pointer-events: none;
+  z-index: 0;
+}
+@media (max-width: 768px) {
+  .cert-watermark-bg {
+    width: 40vw;       /* Drops down from 60vw so it looks much smaller */
+    height: 40vw;      /* Keeps the aspect ratio square */
+    opacity: 0.10;     /* Optional: Fades it a tiny bit more so mobile text is easier to read */
+  }
+}
+
+/* HEADER BLOCK FOR MOBILE LOOK */
+.cert-mobile-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.top-badge-title {
+  font-family: Arial, sans-serif;
+  font-size: 1.6rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  margin-top: 1.3rem;
+  text-align: center;
+}
+
+.header-meta-row {
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* Pushes item 1 to left, item 3 to right */
+  align-items: center;            /* Aligns items vertically in the center line */
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.header-left-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wing-logo-placeholder {
+  /* Removed position: fixed so logo stays contained within its header row */
+  width: 10%;
+  /* height: 8rem; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Prevents the logo from shrinking */
+}
+
+.wing-logo-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .wing-logo-placeholder {
+    width: 20%; /* Increases logo size on mobile for better visibility */
+  }
+}
+
+/* Center Text Headings configuration */
+.brand-text-block {
+  flex: 1;                 /* Allows the middle box to take up all remaining space */
+  text-align: center;      /* Centers the actual lines of text inside the middle box */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.brand-text-block h1 {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin: 2px 0;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.track-date {
+  width: 55%;
+  font-size: 12px;
+  color: #000000;
+  text-align: end;
+}
+
+.track-id {
+  width: 50%;
+  font-size: 12px;
+  color: #000000;
+  text-align: start;
+}
+
+.brand-text-block h2 {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin: 2px 0;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.brand-text-block h3 {
+  font-size: 1.6rem;
+  font-weight: normal;
+  margin: 2px 0 0 0;
+  text-align: center;
+  color: #333;
+}
+
+/* Right side photo configuration */
+.header-right-photo {
+  width: 13%;
+  flex-shrink: 0; /* Prevents photo frame from shrinking */
+}
+
+.photo-frame {
+  /* height: 65px; */
+  border: 1px solid #777;
+  aspect-ratio: 1 / 1;  
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.photo-frame img {
+  width: 90%;
+  height: 90%;
+  object-fit: cover;
+}
+
+.empty-photo {
+  font-size: 9px;
+  color: #aaa;
+}
+
+/* Serial ID / Tracking strip text row */
+.tracking-info-bar {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  font-size: 1rem;
+  margin-top: 8px;
+  border-bottom: 1px solid transparent;
+}
+
+/* RIGID CORE GRID STRUCTURAL RULES */
+.cert-grid-table {
+  border-top: 1px solid #777;
+  border-left: 1px solid #777;
+  border-right: 1px solid #777;
+  position: relative;
+  z-index: 1;
+}
+
+.grid-row {
+  display: flex;
+  border-bottom: 1px solid #777;
+  width: 100%;
+}
+
+.grid-cell {
+  padding: 1px 5px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: start;
+  box-sizing: border-box;
+  overflow: hidden;
+  word-break: break-word;
+}
+.brand-heading-group h1{
+  font-size: 1.53rem;
+}
+@media (max-width: 768px) {
+  .brand-heading-group h1{
+    font-size: 0.87rem;
+    padding-top: 10px;
+  }
+}
+/* Standard full-width row distribution */
+.grid-row .label-cell {
+  width: 33%;
+  border-right: 1px solid #777;
+  font-weight: normal;
+  background-color: #ffffff1d;
+}
+
+.grid-row .value-cell {
+  width: 67%;
+  font-family: Arial, sans-serif;
+}
+
+/* Special extended row height for purpose label statement */
+.height-extended {
+  min-height: 50px;
+}
+
+.processing-label {
+  font-size: 0.75rem !important;
+  line-height: 1.2;
+}
+
+/* Horizontal split fields rules */
+.split-row {
+  display: flex;
+  width: 100% !important;
+}
+
+.split-half {
+  width: 50%;
+  display: flex;
+}
+
+.split-half .label-cell {
+  width: 45% !important;
+  border-right: 1px solid #777;
+  font-weight: normal;
+}
+
+.split-half .value-cell {
+  width: 55% !important;
+}
+
+.split-half:first-child {
+  border-right: 1px solid #777;
+}
+
+/* Text modifiers matching screenshots */
+.uppercase-text { 
+  text-transform: uppercase; 
+  align-items: center;
+}
+.text-small { font-size: 0.75rem; line-height: 1.1; }
+
+/* Verification Footer styling */
+.cert-system-footer {
+  margin-top: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-system-text {
+  font-size: 9px;
+  color: #555;
+}
+/* show as footer with transparent color */
+.certificate-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pbt-certified-footer {
+  margin-top: 12px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  text-align: center;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* Stay Period Section Headers */
+.stay-section-title {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin: 1.2rem 0 0.6rem 0;
+}
+@media (max-width: 768px) {
+  .stay-section-title {
+    font-size: 0.8rem;    /* Automatically shrinks text on smaller viewports */
+    font-weight: 700;
+  }
+}
+
+/* Secondary Table Design Layout */
+.stay-grid-table {
+  border-top: 1px solid #777;
+  border-left: 1px solid #777;
+  border-right: 1px solid #777;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.stay-row {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #777;
+}
+
+.stay-cell {
+  padding: 0.75rem;
+  gap: 1px;
+  /* 1. Set a standard readable base size for desktop */
+  font-size: 1.43rem; 
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+/* 2. Explicitly scale down text on mobile view */
+@media (max-width: 768px) {
+  .stay-cell {
+    font-size: 0.8rem;    /* Automatically shrinks text on smaller viewports */
+    padding: 0.4rem;      /* Shrinks padding so small widths don't crush text */
+  }
+  
+  .station-val {
+    font-size: 0.75rem;   /* Keeps specific overrides proportional */
+  }
+}
+
+.station-val {
+  font-size: 1rem;
+}
+
+/* Precise Header Width Distributions remains intact */
+.address-hdr, .address-val {
+  width: 50%;
+  border-right: 1px solid #777;
+}
+.station-hdr, .station-val {
+  width: 24%;
+  border-right: 1px solid #777;
+  justify-content: center;
+}
+.period-hdr, .period-val-split {
+  width: 26%;
+}
+
+/* Specialized Split Columns for Stay Table Header Box */
+.stay-row.header-row {
+  font-weight: bold;
+  text-align: center;
+}
+.stay-row.header-row .stay-cell {
+  justify-content: center;
+}
+.period-hdr {
+  flex-direction: column;
+  padding: 0 !important;
+}
+.period-main-title {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  width: 100%;
+  border-bottom: 1px solid #777;
+}
+.period-sub-split {
+  display: flex;
+  width: 100%;
+}
+.sub-from, .sub-to {
+  width: 50%;
+  padding: 0.2rem 0;
+}
+.sub-from {
+  border-right: 0.1rem solid #777;
+}
+
+/* Content values modifiers */
+.stay-row.data-row {
+  min-height: 40px;
+}
+.address-val {
+  font-size: 1rem;
+  display: block;        /* Ensures container acts as a normal text block */
+  width: 50%;           /* Allows text to utilize full available width */
+  line-height: 1.4;      /* Adds comfortable line spacing when text wraps */
+}
+
+.address-val strong {
+  font-weight: 500;     /* Keeps "Permanent:" bold */
+  margin-right: 1px;     /* Adds a clean space before the address text starts */
+}
+
+.address-text {
+  font-weight: normal;   /* Forces the address text to stay regular/light font weight */
+}
+
+.period-val-split {
+  display: flex;
+  padding: 0;
+  text-align: center;
+}
+.stay-sub-val {
+  font-size: 1rem;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stay-sub-val.border-right {
+  border-right: 1px solid #777;
+}
+
+/* Criminal Status Bottom Text Configurations */
+.criminal-status-block {
+  margin-top: 0.8rem;
+  font-family: Arial, sans-serif;
+  color: #222;
+}
+.statement-intro {
+  font-size: 1rem;
+  margin: 0 0 6px 0;
+}
+.status-alert-line {
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin: 2px 0;
+}
+.statement-disclaimer {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #252525;
+  margin-top: 8px;
+  text-align: justify;
+  margin-left: 0.5rem;
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+
+/* ========================================================= */
+/* CNIC + CAPTCHA VERIFICATION GATE                          */
+/* ========================================================= */
+
+.verify-gate-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.verify-gate-card {
+  background: #ffffff;
+  padding: 2rem 1.5rem;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+.gray-line {
+  width: 100%;
+  height: 1px;
+  background-color: #eae9e9;
+  margin: 1.0rem 0 1rem 0;
+}
+
+.gate-title {
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a4d;
+  margin-bottom: 0.4rem;
+}
+
+.gate-subtitle {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  text-align: left;
+}
+
+.gate-field {
+  font-size: 0.9rem;
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.capcha {
+  color: #961818;
+}
+
+.gate-field label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #858585;
+  display: block;     /* Makes the label take up the full width */
+  text-align: center; /* Centers the text alignment horizontally */
+  margin: 0 auto;     /* Centers the block container */
+}
+
+
+.gate-field input {
+  border: 1.5px solid #ffd0a1;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input::placeholder {
+  color: #888888;
+  opacity: 0.6;
+}
+.gate-field input:focus { border-color: #ccc; }
+
+.gate-field-error input { border-color: #dc2626; }
+
+.gate-error-text {
+  font-size: 0.78rem;
+  color: #dc2626;
+}
+
+.gate-submit-btn {
+  background: #080874;
+  color: #fff;
+  border: none;
+  width: 6rem;
+  padding: 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  align-self: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.gate-submit-btn:hover:not(:disabled) { background: #0d0ba8; }
+.gate-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.gate-result-line {
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-left: 4px solid transparent;
+}
+
+.gate-result-error {
+  background: #fee2e2;
+  color: #dc2626;
+  border-left-color: #dc2626;
+}
+
+.refresh-captcha-btn {
+  background: #007bff;
+  border: none;
+  border-radius: 0.2rem;
+  width: 6rem;
+  height: 2.4rem;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.1rem 0.2rem 0.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+}
+
+.captcha-btn-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.captcha-btn-text {
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.captcha-input-group {
+  display: flex;
+  gap: 2rem;          
+  width: 100%;
+}
+
+.captcha-input-group input {
+  flex: 1;            
+  min-width: 0;       
+}
+
+.verify-another-btn {
+  background: #ffffff;
+  color: #1a1a4d;
+  border: 1.5px solid #ffffff;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  transition: opacity 0.2s;
+}
+.verify-another-btn:hover { opacity: 0.85; }
+
+@media (max-width: 480px) {
+  .verify-gate-card {
+    padding: 1.5rem 1.1rem;
+  }
+}
+
+/* ========================================================= */
+/* SYSTEM PITB PAGE FOOTER                                   */
+/* ========================================================= */
+.pitb-page-footer {
+  position: absolute;
+  bottom: -6.5rem;             /* Matches container offset seamlessly */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  background-color: #c0c0c046;   /* Premium dark brand background */
+  color: #ffffff;              /* Soft off-white legible text color */
+  text-align: center;
+  padding: 14px 0;
+  font-family: sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 999;
+}
