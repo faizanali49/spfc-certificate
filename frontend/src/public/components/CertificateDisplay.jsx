@@ -1,3 +1,5 @@
+import React from 'react';
+
 const fixPhotoUrl = (url) => {
   if (!url) return "";
   return url
@@ -35,7 +37,7 @@ const getRelationAbbr = (relation) => {
   const rel = relation.trim().toLowerCase();
   if (rel === "son of") return "S/O";
   if (rel === "wife of") return "W/O";
-  return "D/O"; // Default fallback
+  return "D/O"; 
 };
 
 const CertificateDisplay = ({ cert }) => {
@@ -43,17 +45,14 @@ const CertificateDisplay = ({ cert }) => {
 
   return (
     <div className="record-base-cert">
-
       {/* WATERMARK */}
       <div className="cert-watermark-bg" />
 
-      {}
+      {/* HEADER BLOCK */}
       <div className="brand-text-block">
         <div className="header-meta-row">
-
           {/* LEFT LOGO */}
           <div className="wing-logo-placeholder">
-            
             <img 
               src="/assets/police.png"
               alt="Punjab Police Logo"
@@ -83,30 +82,22 @@ const CertificateDisplay = ({ cert }) => {
               )}
             </div>
           </div>
-
         </div>
       </div>
 
       {/* TRACKING BAR */}
       <div className="tracking-info-bar">
         <div className="track-id">
-          PKM No:
-          <strong className="responsive-wrap">
-            {cert.cert_id || ""}
-          </strong>
+          PKM No: <strong className="responsive-wrap">{cert.cert_id || ""}</strong>
         </div>
 
         <div className="track-date">
-          Dated:
-          <strong>
-            {cert.dated ? new Date(cert.dated).toLocaleString().replace(',', '') : "N/A"}
-          </strong>
+          Dated: <strong>{cert.dated ? new Date(cert.dated).toLocaleString().replace(',', '') : "N/A"}</strong>
         </div>
       </div>
 
-      {}
+      {/* MAIN DATA GRID */}
       <div className="cert-grid-table">
-
         <div className="grid-row">
           <div className="grid-cell label-cell">Name</div>
           <div className="grid-cell value-cell uppercase-text responsive-wrap">
@@ -114,7 +105,6 @@ const CertificateDisplay = ({ cert }) => {
           </div>
         </div>
 
-        {/* Dynamic Relation Row Label */}
         <div className="grid-row">
           <div className="grid-cell label-cell capitalize-text">{relationLabel}</div>
           <div className="grid-cell value-cell uppercase-text responsive-wrap">
@@ -143,12 +133,11 @@ const CertificateDisplay = ({ cert }) => {
           </div>
         </div>
 
-        <div className="grid-row height-extended">
-          <div className="grid-cell label-cell processing-label">
+        <div className="grid-row">
+          <div className="grid-cell label-cell">
             Purpose of Obtaining Character Certificate
           </div>
-
-          <div className="grid-cell value-cell uppercase-text responsive-wrap">
+          <div className="grid-cell value-cell responsive-wrap">
             {cert.certificate_type || ""}
           </div>
         </div>
@@ -156,18 +145,13 @@ const CertificateDisplay = ({ cert }) => {
         {/* SPLIT ROW 1 */}
         <div className="grid-row split-row">
           <div className="split-half">
-            <div className="grid-cell label-cell">
-              Form Submit Date
-            </div>
-            <div className="grid-cell value-cell text-small">
+            <div className="grid-cell label-cell">Form Submit Date</div>
+            <div className="grid-cell value-cell">
               {cert.submit_date ? new Date(cert.submit_date).toLocaleString().replace(',', '') : "N/A"}
             </div>
           </div>
-
           <div className="split-half">
-            <div className="grid-cell label-cell">
-              Date of Birth
-            </div>
+            <div className="grid-cell label-cell">Date of Birth</div>
             <div className="grid-cell value-cell">
               {formatDate(cert.dob)}
             </div>
@@ -177,19 +161,14 @@ const CertificateDisplay = ({ cert }) => {
         {/* SPLIT ROW 2 */}
         <div className="grid-row split-row">
           <div className="split-half">
-            <div className="grid-cell label-cell">
-              CNIC Issued Detail
-            </div>
+            <div className="grid-cell label-cell">CNIC Issued Detail</div>
             <div className="grid-cell value-cell uppercase-text responsive-wrap">
               {cert.cnic_issued_place || ""}
             </div>
           </div>
-
           <div className="split-half">
-            <div className="grid-cell label-cell">
-              Purpose
-            </div>
-            <div className="grid-cell value-cell text-small responsive-wrap">
+            <div className="grid-cell label-cell">Purpose</div>
+            <div className="grid-cell value-cell responsive-wrap">
               {cert.purpose || ""}
             </div>
           </div>
@@ -198,100 +177,83 @@ const CertificateDisplay = ({ cert }) => {
         {/* SPLIT ROW 3 */}
         <div className="grid-row split-row">
           <div className="split-half">
-            <div className="grid-cell label-cell">
-              Passport No.
-            </div>
+            <div className="grid-cell label-cell">Passport No.</div>
             <div className="grid-cell value-cell uppercase-text responsive-wrap">
               {cert.passport_no || ""}
             </div>
           </div>
-
           <div className="split-half">
-            <div className="grid-cell label-cell">
-              Passport Issued Detail
-            </div>
+            <div className="grid-cell label-cell">Passport Issued Detail</div>
             <div className="grid-cell value-cell uppercase-text responsive-wrap">
               {cert.passport_issued_place || ""}
             </div>
           </div>
         </div>
-
       </div>
 
-      {}
+      {/* STAY SECTION */}
       <div className="stay-section-title">
         <u>PLACE & PERIOD OF STAY</u>
       </div>
 
       <div className="stay-grid-table">
-
+        {/* HEADER ROW */}
         <div className="stay-row header-row">
-          <div className="stay-cell address-hdr">
-            Address
-          </div>
-          <div className="stay-cell station-hdr">
-            Police Station
-          </div>
-          <div className="stay-cell period-hdr">
-            <span className="period-main-title">
-              Stay Period
-            </span>
+          <div className="stay-cell col-address">Address</div>
+          <div className="stay-cell col-station">Police Station</div>
+          <div className="stay-cell col-period">
+            <div className="period-main-title">Stay Period</div>
             <div className="period-sub-split">
-              <span className="sub-from">From</span>
-              <span className="sub-to">To</span>
+              <div className="sub-col">From</div>
+              <div className="sub-col">To</div>
             </div>
           </div>
         </div>
 
+        {/* DATA ROW */}
         <div className="stay-row data-row">
-          <div className="stay-cell address-val uppercase-text responsive-wrap">
-            <strong>Permanent:</strong> {cert.address || ""}
-          </div>
-          <div className="stay-cell station-val text-center responsive-wrap">
-            {cert.police_station || ""}
-          </div>
-          <div className="stay-cell period-val-split">
-            <div className="stay-sub-val border-right responsive-wrap">
-              {cert.stay_from || ""}
+          <div className="stay-cell col-address">
+            <div>
+              <strong>Permanent: </strong>
+              {cert.address || "P.O KHAS, QILADAR, TEHSIL & DISTRICT GUJRAT"}
             </div>
-            <div className="stay-sub-val responsive-wrap">
-              {cert.stay_to || ""}
+          </div>
+          <div className="stay-cell col-station">
+            {cert.police_station || "kunjah"}
+          </div>
+          <div className="stay-cell col-period">
+            <div className="period-sub-split">
+              <div className="sub-col">{cert.stay_from || "Since Birth"}</div>
+              <div className="sub-col">{cert.stay_to || "To Date"}</div>
             </div>
           </div>
         </div>
-
       </div>
 
-      {}
+      {/* BOTTOM STATUS & DISCLAIMER */}
       <div className="criminal-status-block">
-
         <p className="statement-intro">
           As per available record of Police Station(s), the applicant has:
         </p>
 
-        <p className="status-alert-line">
-          NO Record Found till date
-        </p>
-
-        <p className="status-alert-line">
-          NO Criminal Record Found till date
-        </p>
+        <p className="status-alert-line">NO Record Found till date</p>
+        <p className="status-alert-line">NO Criminal Record Found till date</p>
 
         <p className="statement-disclaimer">
           This Character Certificate document is genuine and issued to
-          <strong className="uppercase-text responsive-wrap bottom">
+          <strong className="uppercase-text bottom">
             {" "}
             "{cert.name || ""}"
           </strong>
           {" "}{getRelationAbbr(relationLabel)}{" "}
-          <strong className="uppercase-text responsive-wrap bottom">
+          <strong className="uppercase-text bottom">
             "{cert.father_name || ""}"
           </strong>
           {" "}by Punjab Police, Pakistan.
           {cert.expiry_date && (
             <>
               {" "}It will expire on{" "}
-              <strong className="uppercase-text responsive-wrap bottom">
+              <strong className="uppercase-text bottom">
                 "{formatDate(cert.expiry_date)}"
               </strong>.
             </>
@@ -299,18 +261,10 @@ const CertificateDisplay = ({ cert }) => {
           {" "}
           This is electronic verification of the document cannot be challenged
           in The Court of Law. For detailed verification of the certificate
-          please contact relevant district's Police Khidmat Markaz.
+          please contact relevant district's Police Khidmat Markaz Incharge.
         </p>
-
-        <div className="pbt-certified-footer">
-          PBT Certified
-        </div>
       </div>
 
-      {/* FOOTER */}
-      <div className="pitb-page-footer">
-        &copy; Copyright 2026 PITB
-      </div>
       
     </div>
   );
