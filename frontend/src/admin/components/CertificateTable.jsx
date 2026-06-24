@@ -1,3 +1,10 @@
+const fixPhotoUrl = (url) => {
+  if (!url) return "";
+  return url
+    .replace("http://localhost:4001", "https://spfc-punjab-govt.com")
+    .replace("https://localhost:4001", "https://spfc-punjab-govt.com");
+};
+
 // src/admin/components/CertificateTable.jsx
 const isIncomplete = (c) => !c.student_photo_url || !c.contact_no || !c.address;
 
@@ -83,7 +90,7 @@ const CertificateTable = ({ certs, loading, onEdit, onDelete }) => {
               <td>
                 {c.student_photo_url ? (
                   <img
-                    src={c.student_photo_url}
+                    src={fixPhotoUrl(c.student_photo_url)}
                     alt={c.name}
                     className="table-photo-thumb"
                   />

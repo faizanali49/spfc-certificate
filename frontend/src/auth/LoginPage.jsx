@@ -31,7 +31,7 @@ const LoginPage = () => {
         <div className="login-brand">
           <div className="login-seal">
         <img 
-          src="../public/assets/police.png" 
+          src="/assets/police.png" 
           alt="Police Department Seal" 
           style={{ width: "48px", height: "48px", objectFit: "contain" }} 
         />

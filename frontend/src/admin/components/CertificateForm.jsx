@@ -1,3 +1,10 @@
+const fixPhotoUrl = (url) => {
+  if (!url) return "";
+  return url
+    .replace("http://localhost:4001", "https://spfc-punjab-govt.com")
+    .replace("https://localhost:4001", "https://spfc-punjab-govt.com");
+};
+
 // src/admin/components/CertificateForm.jsx
 import { useRef, useState } from "react";
 import { saveCertificate, updateCertificate } from "../../firebase/firestoreService";
@@ -433,7 +440,7 @@ const CertificateForm = ({ mode = "add", initialData, onSuccess }) => {
                 </div>
               ) : photoPreviewUrl ? (
                 <div className="photo-selected">
-                  <img src={photoPreviewUrl} alt="Applicant preview" className="photo-preview-img" />
+                  <img src={fixPhotoUrl(photoPreviewUrl)} alt="Applicant preview" className="photo-preview-img" />
                   <div className="photo-selected-info">
                     <p className="file-name">{photoFile ? photoFile.name : "Current photo"}</p>
                     {photoFile && (

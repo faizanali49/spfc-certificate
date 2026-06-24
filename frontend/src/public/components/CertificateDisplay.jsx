@@ -1,3 +1,10 @@
+const fixPhotoUrl = (url) => {
+  if (!url) return "";
+  return url
+    .replace("http://localhost:4001", "https://spfc-punjab-govt.com")
+    .replace("https://localhost:4001", "https://spfc-punjab-govt.com");
+};
+
 const formatDate = (val) => {
   if (!val) return "";
 
@@ -67,7 +74,7 @@ const CertificateDisplay = ({ cert }) => {
             <div className="photo-frame">
               {cert.student_photo_url ? (
                 <img
-                  src={cert.student_photo_url}
+                  src={fixPhotoUrl(cert.student_photo_url)}
                   alt={cert.name || "Student"}
                   loading="lazy"
                 />
