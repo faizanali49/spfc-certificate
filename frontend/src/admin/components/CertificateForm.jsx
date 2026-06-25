@@ -1,9 +1,7 @@
-const fixPhotoUrl = (url) => {
-  if (!url) return "";
-  return url
-    .replace("http://localhost:4001", "https://spfc-punjab-govt.com")
-    .replace("https://localhost:4001", "https://spfc-punjab-govt.com");
-};
+// Photo URLs are now correct as-stored — the server returns the right
+// public URL for whatever environment it's running in (see
+// PUBLIC_BASE_URL in photo-server/.env). No frontend rewriting needed.
+const fixPhotoUrl = (url) => url || "";
 
 // src/admin/components/CertificateForm.jsx
 import { useRef, useState } from "react";

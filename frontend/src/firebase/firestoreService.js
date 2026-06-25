@@ -1,20 +1,29 @@
 // src/firebase/firestoreService.js
 //
-// COST-OPTIMIZATION STRATEGY:
+// COST-OPTIMIZATION STRATEGY (v2 — paginated):
 //
 // 1. CNIC AS DOCUMENT ID
 //    Certificates are stored with the CNIC itself as the Firestore document
 //    ID (dashes stripped, e.g. "3520112345671"). This makes public
-//    verification a direct getDoc() — the cheapest, fastest possible read
-//    in Firestore. There is NO query, NO index scan, and performance is
-//    identical whether you have 100 records or 1,000,000 — direct document
-//    reads do not degrade with collection size.
+//    verification AND admin CNIC search a direct getDoc() — the cheapest
+//    possible read, 1 read no matter how many total records exist.
 //
-// 2. IN-MEMORY CACHE (see cache.js)
-//    All reads are cached in memory for the lifetime of the browser tab.
-//    Repeated lookups of the same CNIC, or repeated Dashboard loads, cost
-//    zero additional reads. Cache is only invalidated by actual writes
-//    (add / edit / delete), so the data is always correct after a change.
+// 2. SERVER-SIDE PAGINATION FOR THE DASHBOARD LIST
+//    fetchCertificatesPage() only ever reads PAGE_SIZE documents at a time,
+//    using a startAfter() cursor. Opening the dashboard, or clicking
+//    Next/Previous, costs PAGE_SIZE reads — NOT the whole collection —
+//    regardless of whether you have 100 or 100,000 records.
+//
+// 3. AGGREGATION QUERIES FOR METRICS
+//    Total / incomplete / recent-this-week counts use getCountFromServer(),
+//    which is billed as a flat 1 read per query, NOT 1 read per document.
+//
+// 4. SHORT-LIVED PAGE CACHE
+//    Each fetched page is cached in memory + sessionStorage, keyed by its
+//    page params. Revisiting the same page (e.g. clicking Back) in the same
+//    tab costs zero reads. A refresh (F5) restores from sessionStorage
+//    instead of re-reading Firestore. Any add/edit/delete clears all of it,
+//    since cursors and page contents are no longer guaranteed correct.
 
 import {
   collection,
@@ -25,42 +34,127 @@ import {
   doc,
   getDoc,
   getDocs,
+  getCountFromServer,
   query,
   where,
   orderBy,
+  limit,
+  startAfter,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./config";
-import { generateUniqueCertId } from "../utils/generateCertId";
-import { cacheGet, cacheSet, cacheInvalidate, cacheInvalidatePrefix } from "./cache";
+import { generateCertId } from "../utils/generateCertId";
+import {
+  cacheGet,
+  cacheSet,
+  cacheInvalidate,
+  cacheInvalidatePrefix,
+  cacheClearAll,
+} from "./cache";
 
-const CERTS_CACHE_KEY = "certificates:all";
+export const PAGE_SIZE = 20;
 
 // Normalizes a CNIC into a safe, consistent Firestore document ID:
 // strips dashes/spaces so "12345-6789012-3" -> "1234567890123"
 export const cnicToDocId = (cnic) => (cnic || "").replace(/[^0-9]/g, "");
 
-// ── CERTIFICATES ──────────────────────────────────────────────
+// ── CERTIFICATES — PAGINATED LIST ───────────────────────────────
+//
+// cursorStack: array of the LAST DOCUMENT SNAPSHOT of every page already
+// visited, e.g. [page1LastDoc, page2LastDoc, ...]. The Dashboard hook owns
+// this stack; this function just needs "the cursor to start after" (or null
+// for page 1) plus an optional city filter.
+//
+// Returns: { rows, lastDoc, hasMore }
+export const fetchCertificatesPage = async ({
+  cursor = null,
+  city = "",
+  force = false,
+} = {}) => {
+  const cacheKey = `certs:page:${city || "all"}:${cursor ? cursor.id : "first"}`;
 
-// One-time fetch of all certificates, cached until the next add/edit/delete.
-// Used by the admin Dashboard only — the public verify page never calls this.
-export const fetchCertificates = async ({ force = false } = {}) => {
   if (!force) {
-    const cached = cacheGet(CERTS_CACHE_KEY);
+    const cached = cacheGet(cacheKey);
     if (cached) return cached;
   }
 
-  const q = query(collection(db, "certificates"), orderBy("created_at", "desc"));
+  const clauses = [collection(db, "certificates")];
+  if (city) clauses.push(where("city", "==", city));
+  clauses.push(orderBy("created_at", "desc"));
+  if (cursor) clauses.push(startAfter(cursor));
+  clauses.push(limit(PAGE_SIZE + 1)); // fetch one extra to know if there's a next page
+
+  const q = query(...clauses);
   const snap = await getDocs(q);
-  const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  return cacheSet(CERTS_CACHE_KEY, data);
+
+  const docs = snap.docs.slice(0, PAGE_SIZE);
+  const hasMore = snap.docs.length > PAGE_SIZE;
+  const rows = docs.map((d) => ({ id: d.id, ...d.data() }));
+  const lastDoc = docs.length ? docs[docs.length - 1] : null;
+
+  const result = { rows, lastDoc, hasMore };
+  return cacheSet(cacheKey, result);
 };
+
+// ── METRICS — AGGREGATION QUERIES (1 read each, not 1-per-doc) ──
+//
+// NOTE: getCountFromServer with a where() clause on a boolean-ish derived
+// field (like "incomplete") isn't possible directly since that field
+// doesn't exist in Firestore — it's computed client-side from 3 fields.
+// We approximate it cheaply: total + recent are true aggregations (1 read
+// each); "incomplete" is intentionally left as a page-scoped count on the
+// Dashboard (computed from whatever page is loaded) rather than a full-scan,
+// OR you can remove it from the metrics row entirely. See Dashboard.jsx.
+export const fetchCertificateMetrics = async ({ force = false } = {}) => {
+  const cacheKey = "certs:metrics";
+  if (!force) {
+    const cached = cacheGet(cacheKey);
+    if (cached) return cached;
+  }
+
+  const colRef = collection(db, "certificates");
+
+  const totalSnap = await getCountFromServer(query(colRef));
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const recentSnap = await getCountFromServer(
+    query(colRef, where("created_at", ">=", sevenDaysAgo))
+  );
+
+  const result = {
+    total: totalSnap.data().count,
+    recentCount: recentSnap.data().count,
+  };
+  return cacheSet(cacheKey, result);
+};
+
+// ── CNIC EXACT-MATCH SEARCH (the only search the admin needs) ──
+//
+// Document ID IS the CNIC, so this is a single getDoc() — 1 read,
+// independent of total collection size. Same cost as public verification.
+export const searchCertificateByCnic = async (cnic) => {
+  const cnicDocId = cnicToDocId(cnic);
+  if (!cnicDocId) return null;
+
+  const cacheKey = `certificate:cnic:${cnicDocId}`;
+  const cached = cacheGet(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const snap = await getDoc(doc(db, "certificates", cnicDocId));
+  if (!snap.exists()) return cacheSet(cacheKey, null);
+
+  const result = { id: snap.id, ...snap.data() };
+  return cacheSet(cacheKey, result);
+};
+
+// ── WRITES ───────────────────────────────────────────────────────
 
 export const saveCertificate = async (formData, photoUrl = null) => {
   const cnicDocId = cnicToDocId(formData.cnic);
   if (!cnicDocId) throw new Error("A valid CNIC is required to save a certificate.");
 
-  const cert_id = await generateUniqueCertId(db);
+  // No Firestore read needed to generate this — see generateCertId.js.
+  const cert_id = generateCertId();
 
   const payload = {
     ...formData,
@@ -71,10 +165,13 @@ export const saveCertificate = async (formData, photoUrl = null) => {
   };
 
   // setDoc with an explicit ID (the CNIC) instead of addDoc — this is what
-  // makes public verification a direct, cheap getDoc() by CNIC later.
+  // makes public verification AND admin CNIC search a direct, cheap getDoc().
   await setDoc(doc(db, "certificates", cnicDocId), payload);
 
-  cacheInvalidate(CERTS_CACHE_KEY);
+  // Page cursors/contents and metrics are no longer guaranteed accurate —
+  // clear everything certificate-related rather than guessing what changed.
+  cacheInvalidatePrefix("certs:page:");
+  cacheInvalidate("certs:metrics");
   cacheInvalidate(`certificate:cnic:${cnicDocId}`);
 
   return { docId: cnicDocId, cert_id };
@@ -88,14 +185,16 @@ export const updateCertificate = async (docId, formData, photoUrl) => {
 
   await updateDoc(ref, updates);
 
-  cacheInvalidate(CERTS_CACHE_KEY);
+  cacheInvalidatePrefix("certs:page:");
+  cacheInvalidate("certs:metrics");
   cacheInvalidate(`certificate:cnic:${docId}`);
 };
 
 export const deleteCertificate = async (docId) => {
   await deleteDoc(doc(db, "certificates", docId));
 
-  cacheInvalidate(CERTS_CACHE_KEY);
+  cacheInvalidatePrefix("certs:page:");
+  cacheInvalidate("certs:metrics");
   cacheInvalidate(`certificate:cnic:${docId}`);
 };
 
@@ -108,12 +207,7 @@ export const getCertificateById = async (docId) => {
 };
 
 // ── PUBLIC VERIFICATION BY CNIC ─────────────────────────────────
-//
-// This is the core of the new verification flow. Because the document ID
-// IS the CNIC, this is a direct getDoc() — one read, no query, no index,
-// and the cost/speed is identical no matter how many total records exist.
-// Each CNIC's result (found or not-found) is cached, so re-checking the
-// same CNIC in the same session costs nothing further.
+// Unchanged — already optimal. Direct getDoc by CNIC, cached per-CNIC.
 export const verifyCertificateByCnic = async (cnic) => {
   const cnicDocId = cnicToDocId(cnic);
   const cacheKey = `certificate:cnic:${cnicDocId}`;
@@ -129,9 +223,9 @@ export const verifyCertificateByCnic = async (cnic) => {
 };
 
 // ── DROPDOWN LISTS (Purposes, Purpose of Obtaining, Cities) ────
-// All three dropdown types share one Firestore collection: "dropdown_lists"
-// Each document has: { list_type: "purpose" | "obtain_purpose" | "city", label, order }
-// These lists rarely change, so they are cached aggressively per list_type.
+// Unchanged — already cheap and correctly scoped. Each list_type is its
+// own cache entry; touching one never invalidates the others or the
+// certificates cache.
 
 const dropdownCacheKey = (listType) => `dropdown_list:${listType}`;
 

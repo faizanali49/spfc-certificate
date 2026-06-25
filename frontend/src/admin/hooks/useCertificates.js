@@ -1,68 +1,139 @@
 // src/admin/hooks/useCertificates.js
 //
-// Fetches certificates ONCE per mount (using the cache — see firestoreService.js).
-// If the cache is already warm (e.g. you just added a certificate and came
-// back to the Dashboard), this resolves instantly with zero Firestore reads.
-// The cache is only invalidated by actual add/edit/delete operations, so
-// simply re-opening the Dashboard never costs an extra read.
+// Paginated certificate list (PAGE_SIZE docs per fetch, not the whole
+// collection) + CNIC-only exact search + cheap aggregation metrics.
+//
+// Cost per action:
+// - Open dashboard / click Next / click Previous: PAGE_SIZE reads (default 20)
+// - Change city filter: PAGE_SIZE reads (resets to page 1)
+// - Search by CNIC: 1 read (direct getDoc by document ID)
+// - Add / Edit / Delete: the write itself, + 1 page reload (PAGE_SIZE reads)
+//   to show the result, + a metrics refresh (2 reads, via aggregation)
 
-import { useEffect, useState, useMemo, useCallback } from "react";
-import { fetchCertificates } from "../../firebase/firestoreService";
+import { useState, useCallback, useEffect } from "react";
+import {
+  fetchCertificatesPage,
+  fetchCertificateMetrics,
+  searchCertificateByCnic,
+  PAGE_SIZE,
+} from "../../firebase/firestoreService";
 
 export const useCertificates = () => {
-  const [certs, setCerts] = useState([]);
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [filterCity, setFilterCity] = useState("");
 
-  const load = useCallback(async (opts) => {
-    setLoading(true);
-    try {
-      const data = await fetchCertificates(opts);
-      setCerts(data);
-    } finally {
-      setLoading(false);
-    }
+  // cursors[i] = the lastDoc SNAPSHOT of page i (0-based), used as the
+  // startAfter() cursor to fetch page i+1. cursors[0] is page 1's last doc,
+  // which lets you fetch page 2, and so on. Page 1 itself needs no cursor.
+  const [cursors, setCursors] = useState([]); // QueryDocumentSnapshot[], not serialized anywhere
+  const [pageIndex, setPageIndex] = useState(0); // 0-based: 0 = page 1
+  const [hasMore, setHasMore] = useState(false);
+
+  const [metrics, setMetrics] = useState({ total: 0, recentCount: 0 });
+
+  // CNIC search is a separate, parallel mode — it doesn't use pagination at
+  // all, since it's always exactly 0 or 1 result.
+  const [cnicSearch, setCnicSearch] = useState("");
+  const [searchResult, setSearchResult] = useState(undefined); // undefined = not searched, null = not found
+  const [searching, setSearching] = useState(false);
+
+  const loadPage = useCallback(
+    async ({ cursor = null, index = 0, force = false } = {}) => {
+      setLoading(true);
+      try {
+        const { rows: pageRows, lastDoc, hasMore: more } = await fetchCertificatesPage({
+          cursor,
+          city: filterCity,
+          force,
+        });
+        setRows(pageRows);
+        setHasMore(more);
+        setPageIndex(index);
+        // Record this page's last-doc snapshot at slot [index] so a future
+        // "go to index+1" knows what cursor to start after.
+        setCursors((prev) => {
+          const next = prev.slice(0, index);
+          next[index] = lastDoc;
+          return next;
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filterCity]
+  );
+
+  const loadMetrics = useCallback(async (opts) => {
+    const m = await fetchCertificateMetrics(opts);
+    setMetrics(m);
   }, []);
 
+  // Initial load + reload whenever the city filter changes (resets to page 1)
   useEffect(() => {
-    load();
-  }, [load]);
+    setCursors([]);
+    loadPage({ cursor: null, index: 0 });
+    loadMetrics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterCity]);
 
-  // Call this after an add/edit/delete to force a fresh read
-  // (the cache was already invalidated by firestoreService, so this
-  // is a real but necessary single read — not a wasted one).
-  const refresh = useCallback(() => load({ force: true }), [load]);
+  const goNext = useCallback(async () => {
+    if (!hasMore) return;
+    const cursorForNextPage = cursors[pageIndex]; // last doc of the page we're leaving
+    await loadPage({ cursor: cursorForNextPage, index: pageIndex + 1 });
+  }, [hasMore, cursors, pageIndex, loadPage]);
 
-  const filtered = useMemo(() => {
-    const s = search.toLowerCase().trim();
-    return certs.filter((c) => {
-      const matchSearch =
-        !s ||
-        c.name?.toLowerCase().includes(s) ||
-        c.cert_id?.toLowerCase().includes(s) ||
-        c.cnic?.toLowerCase().includes(s);
-      const matchCity = !filterCity || c.city?.toLowerCase() === filterCity.toLowerCase();
-      return matchSearch && matchCity;
-    });
-  }, [certs, search, filterCity]);
+  const goPrev = useCallback(async () => {
+    if (pageIndex === 0) return;
+    const targetIndex = pageIndex - 1;
+    const cursorForTargetPage = targetIndex === 0 ? null : cursors[targetIndex - 1];
+    await loadPage({ cursor: cursorForTargetPage, index: targetIndex });
+  }, [pageIndex, cursors, loadPage]);
 
-  const metrics = useMemo(() => {
-    const now = Date.now();
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    return {
-      total: certs.length,
-      incomplete: certs.filter((c) => !c.student_photo_url || !c.contact_no || !c.address).length,
-      recentCount: certs.filter(
-        (c) => c.created_at?.seconds && now - c.created_at.seconds * 1000 < sevenDays
-      ).length,
-    };
-  }, [certs]);
+  const refresh = useCallback(async () => {
+    // After add/edit/delete: cache was already invalidated in
+    // firestoreService. Reload current page from the same cursor, forced.
+    const cursorForCurrentPage = pageIndex === 0 ? null : cursors[pageIndex - 1];
+    await loadPage({ cursor: cursorForCurrentPage, index: pageIndex, force: true });
+    await loadMetrics({ force: true });
+  }, [loadPage, loadMetrics, pageIndex, cursors]);
 
-  const cities = useMemo(() => [...new Set(certs.map((c) => c.city).filter(Boolean))], [certs]);
+  const runCnicSearch = useCallback(async () => {
+    if (!cnicSearch.trim()) {
+      setSearchResult(undefined);
+      return;
+    }
+    setSearching(true);
+    try {
+      const result = await searchCertificateByCnic(cnicSearch);
+      setSearchResult(result); // null = not found, object = found
+    } finally {
+      setSearching(false);
+    }
+  }, [cnicSearch]);
+
+  const clearSearch = useCallback(() => {
+    setCnicSearch("");
+    setSearchResult(undefined);
+  }, []);
 
   return {
-    certs, filtered, loading, search, setSearch, filterCity, setFilterCity,
-    metrics, cities, refresh,
+    rows,
+    loading,
+    pageIndex,
+    hasMore,
+    goNext,
+    goPrev,
+    filterCity,
+    setFilterCity,
+    metrics,
+    refresh,
+    cnicSearch,
+    setCnicSearch,
+    searchResult,
+    searching,
+    runCnicSearch,
+    clearSearch,
+    pageSize: PAGE_SIZE,
   };
 };
